@@ -12,7 +12,7 @@ variables:
   buildConfiguration: 'Release'
   uwpPackages: '$(build.artifactStagingDirectory)\uwp\\'
   androidPackages: '$(build.artifactStagingDirectory)\android\\'
-  testPackages: '$(build.artifactStagingDirectory)\android\test\\'
+  testPackages: '$(build.artifactStagingDirectory)\test\\'
   apksignerKeystorePassword: '12341234'
   uwpsignerKeyPassword : '1234'
 
