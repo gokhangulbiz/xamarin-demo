@@ -44,11 +44,12 @@ steps:
 
 - task: DownloadSecureFile@1
   name: signingCert
-  displayName: 'Download signing key'
+  displayName: 'Download uwp signing certificate'
   inputs:
     secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
 
 - task: VSBuild@1
+  displayName: 'build uwp'
   inputs:
     platform: 'x86'
     solution: '$(solution)'
