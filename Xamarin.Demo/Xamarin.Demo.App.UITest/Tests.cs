@@ -43,6 +43,9 @@ namespace Xamarin.Demo.App.UITest
             // Assert
             result = app.Query(DoneMessage);
             Assert.IsTrue(result.Any(), "The 'clicked' message is not being displayed.");
+
+            // screenshot
+            var screenshot = app.Screenshot("WelcomeTextIsDisplayed");
         }
     }
 }

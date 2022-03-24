@@ -33,16 +33,6 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj">
-      <Project>{61644270-1ea3-4380-8519-7f6d045661d0}</Project>
-      <Name>Xamarin.Demo.App.Android</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Demo.App\Xamarin.Demo.App.iOS\Xamarin.Demo.App.iOS.csproj">
-      <Project>{cc4a2cc0-7e70-4939-a763-f7f4074d16d0}</Project>
-      <Name>Xamarin.Demo.App.iOS</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Tests.cs" />
     <Compile Include="AppInitializer.cs" />
   </ItemGroup>
