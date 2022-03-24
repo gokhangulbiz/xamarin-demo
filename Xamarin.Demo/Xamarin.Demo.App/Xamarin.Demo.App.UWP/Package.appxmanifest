@@ -8,7 +8,7 @@
 
   <Identity
     Name="5702F962-64A6-458D-9B22-3F2F32C3147E"
-    Publisher="CN=B0DF2884-CBE8-4F40-A5D5-63273EA9E85E"
+    Publisher="CN=gokhangulbiz"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="ec0cc741-fd3e-485c-81be-68815c480690" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
