@@ -3,15 +3,12 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- main
-
 pool:
-  vmImage: windows-2022
+  vmImage: windows-latest
 
 variables:
   solution: '**/*.sln'
-  buildPlatform: 'x86|x64|ARM'
+  buildPlatform: 'x86'#|x64|ARM'
   buildConfiguration: 'Release'
   uwpPackages: '$(build.artifactStagingDirectory)\uwp\\'
   androidPackages: '$(build.artifactStagingDirectory)\android\\'
