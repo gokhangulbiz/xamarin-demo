@@ -25,21 +25,21 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-# - task: XamarinAndroid@1
-#   displayName: "build android"
-#   inputs:
-#     projectFile: '**/Xamarin.Demo.App.Android.csproj'
-#     outputDirectory: '$(androidPackages)'
-#     configuration: '$(buildConfiguration)'
-#     jdkOption: 'JDKVersion'
+- task: XamarinAndroid@1
+  displayName: "build android"
+  inputs:
+    projectFile: '**/Xamarin.Demo.App.Android.csproj'
+    outputDirectory: '$(androidPackages)'
+    configuration: '$(buildConfiguration)'
+    jdkOption: 'JDKVersion'
 
-# - task: AndroidSigning@3
-#   displayName: "sign android"
-#   inputs:
-#     apkFiles: '$(androidPackages)/*.apk'
-#     apksignerKeystoreFile: 'android-keystore.keystore'
-#     apksignerKeystorePassword: '$(apksignerKeystorePassword)'
-#     apksignerKeystoreAlias: 'android-keystore'
+- task: AndroidSigning@3
+  displayName: "sign android"
+  inputs:
+    apkFiles: '$(androidPackages)/*.apk'
+    apksignerKeystoreFile: 'android-keystore.keystore'
+    apksignerKeystorePassword: '$(apksignerKeystorePassword)'
+    apksignerKeystoreAlias: 'android-keystore'
 
 - task: DownloadSecureFile@1
   name: signingCert
