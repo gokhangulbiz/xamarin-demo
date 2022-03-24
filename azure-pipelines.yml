@@ -4,11 +4,11 @@
 # https://aka.ms/yaml
 
 pool:
-  vmImage: windows-2022
+  vmImage: windows-2019
 
 variables:
   solution: '**/*.sln'
-  buildPlatform: 'x86|x64|ARM'
+  buildPlatform: 'x86'#|x64|ARM'
   buildConfiguration: 'Release'
   uwpPackages: '$(build.artifactStagingDirectory)\uwp\\'
   androidPackages: '$(build.artifactStagingDirectory)\android\\'
