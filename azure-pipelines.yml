@@ -38,7 +38,8 @@ steps:
   inputs:
     apkFiles: '$(androidPackages)/*.apk'
     apksignerKeystoreFile: 'android-keystore.keystore'
-    apksignerKeystorePassword: $(apksignerKeystorePassword)
+    apksignerKeystorePassword: '$(apksignerKeystorePassword)'
+    apksignerKeystoreAlias: 'android-keystore'
 
 - task: DownloadSecureFile@1
   name: signingCert
