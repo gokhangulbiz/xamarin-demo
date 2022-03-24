@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  vmImage: windows-latest
+  vmImage: windows-2022
 
 variables:
   solution: '**/*.sln'
@@ -15,6 +15,8 @@ variables:
   buildConfiguration: 'Release'
   uwpPackages: '$(build.artifactStagingDirectory)\uwp\\'
   androidPackages: '$(build.artifactStagingDirectory)\android\\'
+  apksignerKeystorePassword: '12341234'
+  uwpsignerKeyPassword : '1234'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -22,6 +24,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+
 - task: XamarinAndroid@1
   displayName: "build android"
   inputs:
@@ -30,13 +33,32 @@ steps:
     configuration: '$(buildConfiguration)'
     jdkOption: 'JDKVersion'
 
+- task: AndroidSigning@3
+  displayName: "sign android"
+  inputs:
+    apkFiles: '$(androidPackages)/*.apk'
+    apksignerKeystoreFile: 'android-keystore.keystore'
+    apksignerKeystorePassword: $(apksignerKeystorePassword)
+
+- task: DownloadSecureFile@1
+  name: signingCert
+  displayName: 'Download signing key'
+  inputs:
+    secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
+
 - task: VSBuild@1
   inputs:
     platform: 'x86'
     solution: '$(solution)'
     configuration: '$(buildConfiguration)'
-    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(uwpPackages)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=false'
-
+    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
+                  /p:AppxPackageDir="$(uwpPackages)" 
+                  /p:AppxBundle=Always 
+                  /p:UapAppxPackageBuildMode=StoreUpload 
+                  /p:AppxPackageSigningEnabled=true
+                  /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
+                  /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
+                  /p:PackageCertificatePassword="$(signingCert.password)"'
 
 - task: PublishBuildArtifacts@1
   displayName: "publish build outputs"
