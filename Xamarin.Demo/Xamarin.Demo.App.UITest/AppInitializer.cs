@@ -13,10 +13,12 @@ namespace Xamarin.Demo.App.UITest
                 case Platform.Android:
                     return ConfigureApp.Android
                         .InstalledApp("com.companyname.xamarin.demo.app")
+                        .EnableLocalScreenshots()
                         .StartApp();
                 case Platform.iOS:
                     return ConfigureApp.iOS.
                         InstalledApp("com.companyname.Xamarin.Demo.App")
+                        .EnableLocalScreenshots()
                         .StartApp();
                 default:
                     throw new NotImplementedException();
