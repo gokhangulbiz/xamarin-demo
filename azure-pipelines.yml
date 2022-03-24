@@ -59,7 +59,7 @@ steps:
                   /p:AppxPackageSigningEnabled=true
                   /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
                   /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
-                  /p:PackageCertificatePassword="$(signingCert.password)"'
+                  /p:PackageCertificatePassword="1234"'
 
 - task: PublishBuildArtifacts@1
   displayName: "publish build outputs"
