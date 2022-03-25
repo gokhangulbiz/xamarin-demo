@@ -17,7 +17,7 @@ variables:
   uwpsignerKeyPassword : '1234'
 
 stages:
-- stage: Build
+- stage: Init
   jobs:
   - job: Install_Nuget
     steps:
@@ -25,6 +25,10 @@ stages:
       - task: NuGetCommand@2
         inputs:
           restoreSolution: '$(solution)'
+  
+- stage: Build
+  dependsOn: Init
+  jobs:
   - job: Build_Android
     steps:
       - task: XamarinAndroid@1
