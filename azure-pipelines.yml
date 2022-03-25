@@ -98,7 +98,8 @@ stages:
           ArtifactName: 'drop'
           publishLocation: 'Container'
 
-- stage: Test on AppCenter
+- stage: Test
+  displayName: Test on AppCenter
   pool:
     name: Default
   dependsOn: Build
