@@ -17,7 +17,7 @@ variables:
   uwpsignerKeyPassword : '1234'
 
 stages:
-- stage: Init
+- stage: Build
   jobs:
   - job: Install_Nuget
     steps:
@@ -25,10 +25,6 @@ stages:
       - task: NuGetCommand@2
         inputs:
           restoreSolution: '$(solution)'
-
-- stage: Build_Sign_Android
-  dependsOn: Init
-  jobs:
   - job: Build_Android
     steps:
       - task: XamarinAndroid@1
@@ -39,8 +35,6 @@ stages:
           configuration: '$(buildConfiguration)'
           msbuildArguments: '/p:AndroidUseSharedRuntime=false'
           jdkOption: 'JDKVersion'
-  - job: Sign_Android
-    steps:
       - task: AndroidSigning@3
         displayName: "sign android"
         inputs:
@@ -49,48 +43,40 @@ stages:
           apksignerKeystorePassword: '$(apksignerKeystorePassword)'
           apksignerKeystoreAlias: 'android-keystore'
 
-- stage: Build_Sign_UWP
-  dependsOn: Init
-  jobs:
-    - job: Install_Certificate
-      steps:
-      - task: DownloadSecureFile@1
-        name: signingCert
-        displayName: 'Download uwp signing certificate'
-        inputs:
-          secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
-    - job: Build_Uwp
-      steps:
-      - task: VSBuild@1
-        displayName: 'build uwp'
-        inputs:
-          platform: 'x86'
-          solution: '$(solution)'
-          configuration: '$(buildConfiguration)'
-          msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
-                        /p:AppxPackageDir="$(uwpPackages)" 
-                        /p:AppxBundle=Always 
-                        /p:UapAppxPackageBuildMode=StoreUpload 
-                        /p:AppxPackageSigningEnabled=true
-                        /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
-                        /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
-                        /p:PackageCertificatePassword="1234"'
+  - job: Build_UWP
+    steps:
+    - task: DownloadSecureFile@1
+      name: signingCert
+      displayName: 'Download uwp signing certificate'
+      inputs:
+        secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
+    - task: VSBuild@1
+      displayName: 'build uwp'
+      inputs:
+        platform: 'x86'
+        solution: '$(solution)'
+        configuration: '$(buildConfiguration)'
+        msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
+                      /p:AppxPackageDir="$(uwpPackages)" 
+                      /p:AppxBundle=Always 
+                      /p:UapAppxPackageBuildMode=StoreUpload 
+                      /p:AppxPackageSigningEnabled=true
+                      /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
+                      /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
+                      /p:PackageCertificatePassword="1234"'
 
-- stage: Build_UI_Test
-  dependsOn: Init
-  jobs:
-    - job: Build_UI_Test
-      steps:
-      - task: MSBuild@1
-        displayName: "build ui tests"
-        inputs:
-          solution: '**/*UITest.csproj'
-          configuration: '$(buildConfiguration)'
-          msbuildArguments: '/p:OutputPath="$(testPackages)"'
-          maximumCpuCount: true
+  - job: Build_UI_Test
+    steps:
+    - task: MSBuild@1
+      displayName: "build ui tests"
+      inputs:
+        solution: '**/*UITest.csproj'
+        configuration: '$(buildConfiguration)'
+        msbuildArguments: '/p:OutputPath="$(testPackages)"'
+        maximumCpuCount: true
 
-- stage: Publish_Artifacts
-  dependsOn: Init
+- stage: Publish
+  dependsOn: Build
   condition: succeeded()
   jobs:
     - job: Publish_Artifacts
