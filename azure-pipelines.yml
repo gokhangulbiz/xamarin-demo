@@ -23,6 +23,15 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+- task: NodeTool@0
+  inputs:
+    versionSpec: '6.x'
+    checkLatest: true
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'npm install -g appcenter-cli'
 - task: XamarinAndroid@1
   displayName: "build android"
   inputs:
@@ -48,17 +57,23 @@ steps:
     msbuildArguments: '/p:OutputPath="$(testPackages)"'
     maximumCpuCount: true
 
-- task: AppCenterTest@1
+- task: Bash@3
+  displayName: "run ui tests on app center"
   inputs:
-    appFile: '$(androidPackages)\com.companyname.xamarin.demo.app.apk'
-    artifactsDirectory: '$(Build.ArtifactStagingDirectory)\AppCenterTest'
-    frameworkOption: 'uitest'
-    uiTestBuildDirectory: '$(testPackages)'
-    credentialsOption: 'serviceEndpoint'
-    serverEndpoint: 'App Center'
-    appSlug: 'gokhangulbiz-microsoft.com/xamarin-android-demo'
-    devices: 'gokhangulbiz-microsoft.com/android-device-set'
-    localeOption: 'en_US'
+    targetType: 'inline'
+    script: 'appcenter test run uitest --app gokhangulbiz-microsoft.com/xamarin-android-demo --devices gokhangulbiz-microsoft.com/android-device-set --async --app-path ''$(androidPackages)\com.companyname.xamarin.demo.app.apk'' --build-dir ''$(testPackages)'' --uitest-tools-dir ''$(testPackages)'''
+
+# - task: AppCenterTest@1
+#   inputs:
+#     appFile: '$(androidPackages)\com.companyname.xamarin.demo.app.apk'
+#     artifactsDirectory: '$(Build.ArtifactStagingDirectory)\AppCenterTest'
+#     frameworkOption: 'uitest'
+#     uiTestBuildDirectory: '$(testPackages)'
+#     credentialsOption: 'serviceEndpoint'
+#     serverEndpoint: 'App Center'
+#     appSlug: 'gokhangulbiz-microsoft.com/xamarin-android-demo'
+#     devices: 'gokhangulbiz-microsoft.com/android-device-set'
+#     localeOption: 'en_US'
 
 - task: DownloadSecureFile@1
   name: signingCert
