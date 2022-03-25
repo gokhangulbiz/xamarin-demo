@@ -132,7 +132,7 @@ stages:
           targetType: 'inline'
           script: "appcenter test run uitest --app gokhangulbiz-microsoft.com/xamarin-android-demo --devices gokhangulbiz-microsoft.com/android-device-set --app-path '$(build.artifactStagingDirectory)\\drop\\android\\com.companyname.xamarin.demo.app.apk' --build-dir '$(build.artifactStagingDirectory)\\drop\\test' --uitest-tools-dir '$(build.artifactStagingDirectory)\\drop\\android' --token 651324cb2aa1775fa3833171cf9635530362d089"
 
-- stage: Distribute
+- stage: Distribute_Android
   displayName: AppCenter - Android
   pool:
     name: Azure Pipelines
@@ -157,7 +157,7 @@ stages:
           releaseNotesInput: 'Initial release note'
           destinationType: 'groups'
 
-- stage: Distribute
+- stage: Distribute_UWP
   displayName: AppCenter - UWP
   pool:
     name: Azure Pipelines
