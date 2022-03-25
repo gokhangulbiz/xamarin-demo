@@ -29,6 +29,7 @@ steps:
     projectFile: '**/Xamarin.Demo.App.Android.csproj'
     outputDirectory: '$(androidPackages)'
     configuration: '$(buildConfiguration)'
+    msbuildArguments: '/p:AndroidUseSharedRuntime=false'
     jdkOption: 'JDKVersion'
 
 - task: AndroidSigning@3
