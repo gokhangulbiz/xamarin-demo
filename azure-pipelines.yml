@@ -17,25 +17,17 @@ variables:
   uwpsignerKeyPassword : '1234'
 
 stages:
-- stage: Init
+- stage: Build
   pool:
     name: Azure Pipelines
+    vmImage: windows-2019
   jobs:
-  - job: Install_Nuget
+  - job: Build_Android
     steps:
       - task: NuGetToolInstaller@1
       - task: NuGetCommand@2
         inputs:
           restoreSolution: '$(solution)'
-  
-- stage: Build
-  pool:
-    name: Azure Pipelines
-  dependsOn: Init
-  jobs:
-  - job: Build_Android
-    steps:
-      - checkout: none
       - task: XamarinAndroid@1
         displayName: "build android"
         inputs:
@@ -54,7 +46,10 @@ stages:
 
   - job: Build_UWP
     steps:
-    - checkout: none
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
     - task: DownloadSecureFile@1
       name: signingCert
       displayName: 'Download uwp signing certificate'
@@ -77,7 +72,10 @@ stages:
 
   - job: Build_UI_Test
     steps:
-    - checkout: none
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
     - task: MSBuild@1
       displayName: "build ui tests"
       inputs:
@@ -89,6 +87,7 @@ stages:
 - stage: Publish
   pool:
     name: Azure Pipelines
+    vmImage: windows-2019
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -106,6 +105,7 @@ stages:
   displayName: Test on AppCenter
   pool:
     name: Azure Pipelines
+    vmImage: windows-2019
   dependsOn: Publish
   condition: succeeded()
   jobs:
