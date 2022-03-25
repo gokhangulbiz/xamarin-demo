@@ -19,7 +19,7 @@ variables:
 stages:
 - stage: Init
   jobs:
-  - job: Install-Nuget
+  - job: Install_Nuget
     steps:
       - task: NuGetToolInstaller@1
       - task: NuGetCommand@2
@@ -29,7 +29,7 @@ stages:
 - stage: Build_Sign_Android
   dependsOn: Init
   jobs:
-  - job: Build-Android
+  - job: Build_Android
     steps:
       - task: XamarinAndroid@1
         displayName: "build android"
@@ -39,7 +39,7 @@ stages:
           configuration: '$(buildConfiguration)'
           msbuildArguments: '/p:AndroidUseSharedRuntime=false'
           jdkOption: 'JDKVersion'
-  - job: Sign-Android
+  - job: Sign_Android
     steps:
       - task: AndroidSigning@3
         displayName: "sign android"
@@ -52,14 +52,14 @@ stages:
 - stage: Build_Sign_UWP
   dependsOn: Init
   jobs:
-    - job: Install-Certificate
+    - job: Install_Certificate
       steps:
       - task: DownloadSecureFile@1
         name: signingCert
         displayName: 'Download uwp signing certificate'
         inputs:
           secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
-    - job: Build-Uwp
+    - job: Build_Uwp
       steps:
       - task: VSBuild@1
         displayName: 'build uwp'
@@ -79,7 +79,7 @@ stages:
 - stage: Build_UI_Test
   dependsOn: Init
   jobs:
-    - job: Build-UI-Test
+    - job: Build_UI_Test
       steps:
       - task: MSBuild@1
         displayName: "build ui tests"
@@ -93,7 +93,7 @@ stages:
   dependsOn: Init
   condition: succeeded()
   jobs:
-    - job: Build-UI-Test
+    - job: Publish_Artifacts
       steps:
       - task: PublishBuildArtifacts@1
         displayName: "publish build outputs"
