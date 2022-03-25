@@ -10,9 +10,9 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'x86'#|x64|ARM'
   buildConfiguration: 'Release'
-  uwpPackages: '$(build.artifactStagingDirectory)\uwp\\'
-  androidPackages: '$(build.artifactStagingDirectory)\android\\'
-  testPackages: '$(build.artifactStagingDirectory)\test\\'
+  uwpPackages: '$(build.artifactStagingDirectory)\uwp'
+  androidPackages: '$(build.artifactStagingDirectory)\android'
+  testPackages: '$(build.artifactStagingDirectory)\test'
   apksignerKeystorePassword: '12341234'
   uwpsignerKeyPassword : '1234'
 
@@ -50,8 +50,8 @@ steps:
 
 - task: AppCenterTest@1
   inputs:
-    appFile: '$(androidPackages)/com.companyname.xamarin.demo.app.apk'
-    artifactsDirectory: '$(Build.ArtifactStagingDirectory)/AppCenterTest'
+    appFile: '$(androidPackages)\com.companyname.xamarin.demo.app.apk'
+    artifactsDirectory: '$(Build.ArtifactStagingDirectory)\AppCenterTest'
     frameworkOption: 'uitest'
     uiTestBuildDirectory: '$(testPackages)'
     credentialsOption: 'serviceEndpoint'
