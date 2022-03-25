@@ -19,7 +19,7 @@ variables:
 stages:
 - stage: Init
   pool:
-    name: Default
+    name: Azure Pipelines
   jobs:
   - job: Install_Nuget
     steps:
@@ -30,7 +30,7 @@ stages:
   
 - stage: Build
   pool:
-    name: Default
+    name: Azure Pipelines
   dependsOn: Init
   jobs:
   - job: Build_Android
@@ -85,7 +85,7 @@ stages:
 
 - stage: Publish
   pool:
-    name: Default
+    name: Azure Pipelines
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -101,8 +101,8 @@ stages:
 - stage: Test
   displayName: Test on AppCenter
   pool:
-    name: Default
-  dependsOn: Build
+    name: Azure Pipelines
+  dependsOn: Publish
   condition: succeeded()
   jobs:
   - job: Publish_Artifacts
