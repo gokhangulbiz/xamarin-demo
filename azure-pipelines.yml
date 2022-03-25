@@ -16,62 +16,88 @@ variables:
   apksignerKeystorePassword: '12341234'
   uwpsignerKeyPassword : '1234'
 
-steps:
-- task: NuGetToolInstaller@1
+stages:
+- stage: Init
+  jobs:
+  - job: Install-Nuget
+    steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          restoreSolution: '$(solution)'
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+- stage: Build & Sign Android
+  dependsOn: Init
+  jobs:
+  - job: Build-Android
+    steps:
+      - task: XamarinAndroid@1
+        displayName: "build android"
+        inputs:
+          projectFile: '**/Xamarin.Demo.App.Android.csproj'
+          outputDirectory: '$(androidPackages)'
+          configuration: '$(buildConfiguration)'
+          msbuildArguments: '/p:AndroidUseSharedRuntime=false'
+          jdkOption: 'JDKVersion'
+  - job: Sign-Android
+    steps:
+      - task: AndroidSigning@3
+        displayName: "sign android"
+        inputs:
+          apkFiles: '$(androidPackages)/*.apk'
+          apksignerKeystoreFile: 'android-keystore.keystore'
+          apksignerKeystorePassword: '$(apksignerKeystorePassword)'
+          apksignerKeystoreAlias: 'android-keystore'
 
-- task: XamarinAndroid@1
-  displayName: "build android"
-  inputs:
-    projectFile: '**/Xamarin.Demo.App.Android.csproj'
-    outputDirectory: '$(androidPackages)'
-    configuration: '$(buildConfiguration)'
-    msbuildArguments: '/p:AndroidUseSharedRuntime=false'
-    jdkOption: 'JDKVersion'
+- stage: Build & Sign UWP
+  dependsOn: Init
+  jobs:
+    - job: Install-Certificate
+      steps:
+      - task: DownloadSecureFile@1
+        name: signingCert
+        displayName: 'Download uwp signing certificate'
+        inputs:
+          secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
+    - job: Build-Uwp
+      steps:
+      - task: VSBuild@1
+        displayName: 'build uwp'
+        inputs:
+          platform: 'x86'
+          solution: '$(solution)'
+          configuration: '$(buildConfiguration)'
+          msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
+                        /p:AppxPackageDir="$(uwpPackages)" 
+                        /p:AppxBundle=Always 
+                        /p:UapAppxPackageBuildMode=StoreUpload 
+                        /p:AppxPackageSigningEnabled=true
+                        /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
+                        /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
+                        /p:PackageCertificatePassword="1234"'
 
-- task: AndroidSigning@3
-  displayName: "sign android"
-  inputs:
-    apkFiles: '$(androidPackages)/*.apk'
-    apksignerKeystoreFile: 'android-keystore.keystore'
-    apksignerKeystorePassword: '$(apksignerKeystorePassword)'
-    apksignerKeystoreAlias: 'android-keystore'
+- stage: Build & UI Test
+  dependsOn: Init
+  jobs:
+    - job: Build-UI-Test
+      steps:
+      - task: MSBuild@1
+        displayName: "build ui tests"
+        inputs:
+          solution: '**/*UITest.csproj'
+          configuration: '$(buildConfiguration)'
+          msbuildArguments: '/p:OutputPath="$(testPackages)"'
+          maximumCpuCount: true
 
-- task: MSBuild@1
-  displayName: "build ui tests"
-  inputs:
-    solution: '**/*UITest.csproj'
-    configuration: '$(buildConfiguration)'
-    msbuildArguments: '/p:OutputPath="$(testPackages)"'
-    maximumCpuCount: true
-
-- task: DownloadSecureFile@1
-  name: signingCert
-  displayName: 'Download uwp signing certificate'
-  inputs:
-    secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
-
-- task: VSBuild@1
-  displayName: 'build uwp'
-  inputs:
-    platform: 'x86'
-    solution: '$(solution)'
-    configuration: '$(buildConfiguration)'
-    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
-                  /p:AppxPackageDir="$(uwpPackages)" 
-                  /p:AppxBundle=Always 
-                  /p:UapAppxPackageBuildMode=StoreUpload 
-                  /p:AppxPackageSigningEnabled=true
-                  /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
-                  /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
-                  /p:PackageCertificatePassword="1234"'
-
-- task: PublishBuildArtifacts@1
-  displayName: "publish build outputs"
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+- stage: Publish Artifacts
+  dependsOn: Init
+  condition: succeeded()
+  jobs:
+    - job: Build-UI-Test
+      steps:
+      - task: PublishBuildArtifacts@1
+        displayName: "publish build outputs"
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
