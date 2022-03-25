@@ -26,7 +26,7 @@ stages:
         inputs:
           restoreSolution: '$(solution)'
 
-- stage: Build & Sign Android
+- stage: Build-Sign-Android
   dependsOn: Init
   jobs:
   - job: Build-Android
@@ -49,7 +49,7 @@ stages:
           apksignerKeystorePassword: '$(apksignerKeystorePassword)'
           apksignerKeystoreAlias: 'android-keystore'
 
-- stage: Build & Sign UWP
+- stage: Build-Sign-UWP
   dependsOn: Init
   jobs:
     - job: Install-Certificate
@@ -76,7 +76,7 @@ stages:
                         /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
                         /p:PackageCertificatePassword="1234"'
 
-- stage: Build & UI Test
+- stage: Build-UI-Test
   dependsOn: Init
   jobs:
     - job: Build-UI-Test
@@ -89,7 +89,7 @@ stages:
           msbuildArguments: '/p:OutputPath="$(testPackages)"'
           maximumCpuCount: true
 
-- stage: Publish Artifacts
+- stage: Publish-Artifacts
   dependsOn: Init
   condition: succeeded()
   jobs:
