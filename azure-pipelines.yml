@@ -43,7 +43,12 @@ stages:
           apksignerKeystoreFile: 'android-keystore.keystore'
           apksignerKeystorePassword: '$(apksignerKeystorePassword)'
           apksignerKeystoreAlias: 'android-keystore'
-
+      - task: PublishBuildArtifacts@1
+        displayName: "publish build outputs"
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
   - job: Build_UWP
     steps:
     - task: NuGetToolInstaller@1
@@ -69,7 +74,12 @@ stages:
                       /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
                       /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
                       /p:PackageCertificatePassword="1234"'
-
+    - task: PublishBuildArtifacts@1
+      displayName: "publish build outputs"
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
   - job: Build_UI_Test
     steps:
     - task: NuGetToolInstaller@1
@@ -83,35 +93,29 @@ stages:
         configuration: '$(buildConfiguration)'
         msbuildArguments: '/p:OutputPath="$(testPackages)"'
         maximumCpuCount: true
-
-- stage: Publish
-  pool:
-    name: Azure Pipelines
-    vmImage: windows-2019
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-    - job: Publish_Artifacts
-      steps:
-      - checkout: none
-      - task: PublishBuildArtifacts@1
-        displayName: "publish build outputs"
-        inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-          ArtifactName: 'drop'
-          publishLocation: 'Container'
+    - task: PublishBuildArtifacts@1
+      displayName: "publish build outputs"
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 
 - stage: Test
   displayName: Test on AppCenter
   pool:
     name: Azure Pipelines
     vmImage: windows-2019
-  dependsOn: Publish
+  dependsOn: Build
   condition: succeeded()
   jobs:
-  - job: Publish_Artifacts
+  - job: Run_Test_On_AppCenter
     steps:
       - checkout: none
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          downloadPath: '$(build.artifactStagingDirectory)'
       - task: NodeTool@0
         displayName: Install npm
         inputs:
