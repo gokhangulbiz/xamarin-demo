@@ -18,6 +18,8 @@ variables:
 
 stages:
 - stage: Init
+  pool:
+    name: Default
   jobs:
   - job: Install_Nuget
     steps:
@@ -27,6 +29,8 @@ stages:
           restoreSolution: '$(solution)'
   
 - stage: Build
+  pool:
+    name: Default
   dependsOn: Init
   jobs:
   - job: Build_Android
@@ -80,6 +84,8 @@ stages:
         maximumCpuCount: true
 
 - stage: Publish
+  pool:
+    name: Default
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -91,3 +97,28 @@ stages:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'
           ArtifactName: 'drop'
           publishLocation: 'Container'
+
+- stage: Test on AppCenter
+  pool:
+    name: Default
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Publish_Artifacts
+    steps:
+      - task: NodeTool@0
+        displayName: Install npm
+        inputs:
+          versionSpec: '16.x'
+          checkLatest: true
+      - task: Bash@3
+        displayName: Install appcenter-cli
+        inputs:
+          targetType: 'inline'
+          script: 'npm install -g appcenter-cli'
+      - task: Bash@3
+        displayName: Run tests on appcenter
+        inputs:
+          targetType: 'inline'
+          script: "appcenter test run uitest --app gokhangulbiz-microsoft.com/xamarin-android-demo --devices gokhangulbiz-microsoft.com/android-device-set --async --app-path '$(androidPackages)\\com.companyname.xamarin.demo.app.apk' --build-dir '$(testPackages)' --uitest-tools-dir '$(testPackages)' --token 651324cb2aa1775fa3833171cf9635530362d089"
+      
