@@ -40,6 +40,26 @@ steps:
     apksignerKeystorePassword: '$(apksignerKeystorePassword)'
     apksignerKeystoreAlias: 'android-keystore'
 
+- task: MSBuild@1
+  displayName: "build ui tests"
+  inputs:
+    solution: '**/*UITest.csproj'
+    configuration: '$(buildConfiguration)'
+    msbuildArguments: '/p:OutputPath="$(testPackages)"'
+    maximumCpuCount: true
+
+- task: AppCenterTest@1
+  inputs:
+    appFile: '$(androidPackages)/com.companyname.xamarin.demo.app.apk'
+    artifactsDirectory: '$(Build.ArtifactStagingDirectory)/AppCenterTest'
+    frameworkOption: 'uitest'
+    uiTestBuildDirectory: '$(testPackages)'
+    credentialsOption: 'serviceEndpoint'
+    serverEndpoint: 'App Center'
+    appSlug: 'gokhangulbiz-microsoft.com/xamarin-android-demo'
+    devices: 'gokhangulbiz-microsoft.com/android-device-set'
+    localeOption: 'en_US'
+
 - task: DownloadSecureFile@1
   name: signingCert
   displayName: 'Download uwp signing certificate'
@@ -60,13 +80,6 @@ steps:
                   /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
                   /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
                   /p:PackageCertificatePassword="1234"'
-
-- task: MSBuild@1
-  inputs:
-    solution: '**/*UITest.csproj'
-    configuration: '$(buildConfiguration)'
-    msbuildArguments: '/p:OutputPath="$(testPackages)"'
-    maximumCpuCount: true
 
 - task: PublishBuildArtifacts@1
   displayName: "publish build outputs"
