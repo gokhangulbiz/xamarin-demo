@@ -4,72 +4,173 @@
 # https://aka.ms/yaml
 
 pool:
-  vmImage: windows-latest
+  vmImage: windows-2019
 
 variables:
   solution: '**/*.sln'
   buildPlatform: 'x86'#|x64|ARM'
   buildConfiguration: 'Release'
-  uwpPackages: '$(build.artifactStagingDirectory)\uwp\\'
-  androidPackages: '$(build.artifactStagingDirectory)\android\\'
-  testPackages: '$(build.artifactStagingDirectory)\test\\'
+  uwpPackages: '$(build.artifactStagingDirectory)\uwp'
+  androidPackages: '$(build.artifactStagingDirectory)\android'
+  testPackages: '$(build.artifactStagingDirectory)\test'
   apksignerKeystorePassword: '12341234'
   uwpsignerKeyPassword : '1234'
 
-steps:
-- task: NuGetToolInstaller@1
+stages:
+- stage: Build
+  pool:
+    name: Azure Pipelines
+    vmImage: windows-2019
+  jobs:
+  - job: Build_Android
+    steps:
+      - task: NuGetToolInstaller@1
+      - task: NuGetCommand@2
+        inputs:
+          restoreSolution: '$(solution)'
+      - task: XamarinAndroid@1
+        displayName: "build android"
+        inputs:
+          projectFile: '**/Xamarin.Demo.App.Android.csproj'
+          outputDirectory: '$(androidPackages)'
+          configuration: '$(buildConfiguration)'
+          msbuildArguments: '/p:AndroidUseSharedRuntime=false'
+          jdkOption: 'JDKVersion'
+      - task: AndroidSigning@3
+        displayName: "sign android"
+        inputs:
+          apkFiles: '$(androidPackages)/*.apk'
+          apksignerKeystoreFile: 'android-keystore.keystore'
+          apksignerKeystorePassword: '$(apksignerKeystorePassword)'
+          apksignerKeystoreAlias: 'android-keystore'
+      - task: PublishBuildArtifacts@1
+        displayName: "publish build outputs"
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
+  - job: Build_UWP
+    steps:
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+    - task: DownloadSecureFile@1
+      name: signingCert
+      displayName: 'Download uwp signing certificate'
+      inputs:
+        secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
+    - task: VSBuild@1
+      displayName: 'build uwp'
+      inputs:
+        platform: 'x86'
+        solution: '$(solution)'
+        configuration: '$(buildConfiguration)'
+        msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
+                      /p:AppxPackageDir="$(uwpPackages)" 
+                      /p:AppxBundle=Always 
+                      /p:UapAppxPackageBuildMode=StoreUpload 
+                      /p:AppxPackageSigningEnabled=true
+                      /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
+                      /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
+                      /p:PackageCertificatePassword="1234"'
+    - task: PublishBuildArtifacts@1
+      displayName: "publish build outputs"
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+  - job: Build_UI_Test
+    steps:
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+    - task: MSBuild@1
+      displayName: "build ui tests"
+      inputs:
+        solution: '**/*UITest.csproj'
+        configuration: '$(buildConfiguration)'
+        msbuildArguments: '/p:OutputPath="$(testPackages)"'
+        maximumCpuCount: true
+    - task: PublishBuildArtifacts@1
+      displayName: "publish build outputs"
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+- stage: Test
+  displayName: Test Android App on AppCenter Cloud Devices
+  pool:
+    name: Azure Pipelines
+    vmImage: windows-2019
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Run_Test_On_AppCenter
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          downloadPath: '$(build.artifactStagingDirectory)'
+      - task: NodeTool@0
+        displayName: Install npm
+        inputs:
+          versionSpec: '16.x'
+          checkLatest: true
+      - task: Bash@3
+        displayName: Install appcenter-cli
+        inputs:
+          targetType: 'inline'
+          script: 'npm install -g appcenter-cli'
+      - task: Bash@3
+        displayName: Run tests on appcenter
+        inputs:
+          targetType: 'inline'
+          script: "appcenter test run uitest --app gokhangulbiz-microsoft.com/xamarin-android-demo --async --devices gokhangulbiz-microsoft.com/android-device-set --app-path '$(build.artifactStagingDirectory)\\drop\\android\\com.companyname.xamarin.demo.app.apk' --build-dir '$(build.artifactStagingDirectory)\\drop\\test' --uitest-tools-dir '$(build.artifactStagingDirectory)\\drop\\test' --token 651324cb2aa1775fa3833171cf9635530362d089"
 
-- task: XamarinAndroid@1
-  displayName: "build android"
-  inputs:
-    projectFile: '**/Xamarin.Demo.App.Android.csproj'
-    outputDirectory: '$(androidPackages)'
-    configuration: '$(buildConfiguration)'
-    jdkOption: 'JDKVersion'
+- stage: Distribute_Android
+  displayName: Distribute Android App to AppCenter
+  pool:
+    name: Azure Pipelines
+    vmImage: windows-2019
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - job: Distribute_Android_AppCenter
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          downloadPath: '$(build.artifactStagingDirectory)'
+      - task: AppCenterDistribute@3
+        inputs:
+          serverEndpoint: 'App Center'
+          appSlug: 'gokhangulbiz-microsoft.com/xamarin-android-demo'
+          appFile: '$(build.artifactStagingDirectory)\drop\android\com.companyname.xamarin.demo.app.apk'
+          releaseNotesOption: 'input'
+          releaseNotesInput: 'Initial release note'
+          destinationType: 'groups'
 
-- task: AndroidSigning@3
-  displayName: "sign android"
-  inputs:
-    apkFiles: '$(androidPackages)/*.apk'
-    apksignerKeystoreFile: 'android-keystore.keystore'
-    apksignerKeystorePassword: '$(apksignerKeystorePassword)'
-    apksignerKeystoreAlias: 'android-keystore'
-
-- task: DownloadSecureFile@1
-  name: signingCert
-  displayName: 'Download uwp signing certificate'
-  inputs:
-    secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
-
-- task: VSBuild@1
-  displayName: 'build uwp'
-  inputs:
-    platform: 'x86'
-    solution: '$(solution)'
-    configuration: '$(buildConfiguration)'
-    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
-                  /p:AppxPackageDir="$(uwpPackages)" 
-                  /p:AppxBundle=Always 
-                  /p:UapAppxPackageBuildMode=StoreUpload 
-                  /p:AppxPackageSigningEnabled=true
-                  /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
-                  /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
-                  /p:PackageCertificatePassword="1234"'
-
-- task: MSBuild@1
-  inputs:
-    solution: '**/*UITest.csproj'
-    configuration: '$(buildConfiguration)'
-    msbuildArguments: '/p:OutputPath="$(testPackages)"'
-    maximumCpuCount: true
-
-- task: PublishBuildArtifacts@1
-  displayName: "publish build outputs"
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+- stage: Distribute_UWP
+  displayName: Distribute UWP App to AppCenter
+  pool:
+    name: Azure Pipelines
+    vmImage: windows-2019
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - job: Distribute_UWP_AppCenter
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          downloadPath: '$(build.artifactStagingDirectory)'
+      
