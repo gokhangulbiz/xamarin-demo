@@ -49,37 +49,37 @@ stages:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'
           ArtifactName: 'drop'
           publishLocation: 'Container'
-  - job: Build_UWP
-    steps:
-    - task: NuGetToolInstaller@1
-    - task: NuGetCommand@2
-      inputs:
-        restoreSolution: '$(solution)'
-    - task: DownloadSecureFile@1
-      name: signingCert
-      displayName: 'Download uwp signing certificate'
-      inputs:
-        secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
-    - task: VSBuild@1
-      displayName: 'build uwp'
-      inputs:
-        platform: 'x86'
-        solution: '$(solution)'
-        configuration: '$(buildConfiguration)'
-        msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
-                      /p:AppxPackageDir="$(uwpPackages)" 
-                      /p:AppxBundle=Always 
-                      /p:UapAppxPackageBuildMode=StoreUpload 
-                      /p:AppxPackageSigningEnabled=true
-                      /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
-                      /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
-                      /p:PackageCertificatePassword="1234"'
-    - task: PublishBuildArtifacts@1
-      displayName: "publish build outputs"
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
+  # - job: Build_UWP
+  #   steps:
+  #   - task: NuGetToolInstaller@1
+  #   - task: NuGetCommand@2
+  #     inputs:
+  #       restoreSolution: '$(solution)'
+  #   - task: DownloadSecureFile@1
+  #     name: signingCert
+  #     displayName: 'Download uwp signing certificate'
+  #     inputs:
+  #       secureFile: 'Xamarin.Demo.App.UWP_TemporaryKey.pfx'
+  #   - task: VSBuild@1
+  #     displayName: 'build uwp'
+  #     inputs:
+  #       platform: 'x86'
+  #       solution: '$(solution)'
+  #       configuration: '$(buildConfiguration)'
+  #       msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" 
+  #                     /p:AppxPackageDir="$(uwpPackages)" 
+  #                     /p:AppxBundle=Always 
+  #                     /p:UapAppxPackageBuildMode=StoreUpload 
+  #                     /p:AppxPackageSigningEnabled=true
+  #                     /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" 
+  #                     /p:PackageCertificateKeyFile="$(signingCert.secureFilePath)"
+  #                     /p:PackageCertificatePassword="1234"'
+  #   - task: PublishBuildArtifacts@1
+  #     displayName: "publish build outputs"
+  #     inputs:
+  #       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+  #       ArtifactName: 'drop'
+  #       publishLocation: 'Container'
   - job: Build_UI_Test
     steps:
     - task: NuGetToolInstaller@1
@@ -116,21 +116,38 @@ stages:
           buildType: 'current'
           downloadType: 'specific'
           downloadPath: '$(build.artifactStagingDirectory)'
-      - task: NodeTool@0
-        displayName: Install npm
+      # - task: NodeTool@0
+      #   displayName: Install npm
+      #   inputs:
+      #     versionSpec: '16.x'
+      #     checkLatest: true
+      # - task: Bash@3
+      #   displayName: Install appcenter-cli
+      #   inputs:
+      #     targetType: 'inline'
+      #     script: 'npm install -g appcenter-cli'
+      # - task: Bash@3
+      #   displayName: Run tests on appcenter
+      #   inputs:
+      #     targetType: 'inline'
+      #     #script: "appcenter test run uitest --app  --async --devices daronyondem-MS/test-devices --app-path '$(build.artifactStagingDirectory)\\drop\\android\\com.companyname.xamarin.demo.app.apk' --build-dir '$(build.artifactStagingDirectory)\\drop\\test' --uitest-tools-dir '$(build.artifactStagingDirectory)\\drop\\test' --token da2125d78edb6e61361b8af6aba2b54fb0427682"
+      #     script: "appcenter test run uitest --app gokhangulbiz-microsoft.com/xamarin-android-demo --async --devices gokhangulbiz-microsoft.com/android-device-set --app-path '$(build.artifactStagingDirectory)\\drop\\android\\com.companyname.xamarin.demo.app.apk' --build-dir '$(build.artifactStagingDirectory)\\drop\\test' --uitest-tools-dir '$(build.artifactStagingDirectory)\\drop\\test' --token 651324cb2aa1775fa3833171cf9635530362d089"
+      - task: AppCenterTest@1
         inputs:
-          versionSpec: '16.x'
-          checkLatest: true
-      - task: Bash@3
-        displayName: Install appcenter-cli
-        inputs:
-          targetType: 'inline'
-          script: 'npm install -g appcenter-cli'
-      - task: Bash@3
-        displayName: Run tests on appcenter
-        inputs:
-          targetType: 'inline'
-          script: "appcenter test run uitest --app daronyondem-MS/xamarin-demo --async --devices daronyondem-MS/test-devices --app-path '$(build.artifactStagingDirectory)\\drop\\android\\com.companyname.xamarin.demo.app.apk' --build-dir '$(build.artifactStagingDirectory)\\drop\\test' --uitest-tools-dir '$(build.artifactStagingDirectory)\\drop\\test' --token da2125d78edb6e61361b8af6aba2b54fb0427682"
+          appFile: '$(build.artifactStagingDirectory)\\drop\\android\\com.companyname.xamarin.demo.app.apk'
+          artifactsDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
+          prepareTests: false
+          credentialsOption: 'serviceEndpoint'
+          serverEndpoint: 'App Center'
+          appSlug: 'gokhangulbiz-microsoft.com/xamarin-android-demo'
+          devices: 'gokhangulbiz-microsoft.com/android-device-set'
+          localeOption: 'en_US'
+          #runOptions: '--build-dir ''$(build.artifactStagingDirectory)\\drop\\test'' --uitest-tools-dir ''$(build.artifactStagingDirectory)\\drop\\test'''
+          skipWaitingForResults: true
+          uiTestBuildDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
+          uiTestToolsDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
+
+
 
 - stage: Distribute_Android
   displayName: Distribute Android App to AppCenter
