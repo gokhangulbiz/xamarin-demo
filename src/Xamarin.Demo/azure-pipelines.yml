@@ -142,10 +142,10 @@ stages:
           appSlug: 'gokhangulbiz-microsoft.com/xamarin-android-demo'
           devices: 'gokhangulbiz-microsoft.com/android-device-set'
           localeOption: 'en_US'
-          #runOptions: '--build-dir ''$(build.artifactStagingDirectory)\\drop\\test'' --uitest-tools-dir ''$(build.artifactStagingDirectory)\\drop\\test'''
+          runOptions: '--build-dir ''$(build.artifactStagingDirectory)\\drop\\test'' --uitest-tools-dir ''$(build.artifactStagingDirectory)\\drop\\test'''
           skipWaitingForResults: true
-          uiTestBuildDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
-          uiTestToolsDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
+          #uiTestBuildDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
+          #uiTestToolsDirectory: '$(build.artifactStagingDirectory)\\drop\\test'
 
 
 
