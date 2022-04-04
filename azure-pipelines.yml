@@ -10,6 +10,9 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+- group: App-Center
+
 steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
@@ -17,13 +20,5 @@ steps:
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
+    echo $(API_TOKEN)
   displayName: 'Run a multi-line script'
-
-- task: AppCenterDistribute@3
-  inputs:
-    serverEndpoint: 'App Center'
-    appSlug: 'dfdffd'
-    appFile: 'dfdfd'
-    releaseNotesOption: 'input'
-    releaseNotesInput: 'dfdf'
-    destinationType: 'groups'
