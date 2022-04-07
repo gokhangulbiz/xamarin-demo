@@ -24,9 +24,9 @@ jobs:
       #       vs-version: '[16.0]'
     - name: build android
       # run: |
-      #   msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.cproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid /p:AndroidUseSharedRuntime=false 
+      #   msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid /p:AndroidUseSharedRuntime=false 
       run: |
-        msbuild '${{ github.workspace }}\src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.cproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.android_keystore_path }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
+        msbuild '${{ github.workspace }}\src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.android_keystore_path }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
     # - uses: r0adkll/sign-android-release@v1.0.4
     #   name: Sign app APK
     #   with:
