@@ -20,8 +20,8 @@ jobs:
     - run: nuget restore ${{ env.solution }}
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
-      with:
-            vs-version: '[16.0]'
+      # with:
+      #       vs-version: '[16.0]'
     - name: build android
       # run: |
       #   msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.cproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid /p:AndroidUseSharedRuntime=false 
