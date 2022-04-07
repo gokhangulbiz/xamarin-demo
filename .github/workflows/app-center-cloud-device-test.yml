@@ -9,7 +9,7 @@ env:
   testPackages: ${{ github.workspace }}\test
   appcenter-app-slug: daronyondem-MS/xamarin-demo
   appcenter-device-set-slug: daronyondem-MS/test-devices
-  uwp_signer_certificate_path : src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
+  uwp_signer_certificate_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
 jobs:
   Build_Stage_Build_Android:
     runs-on: windows-2019
@@ -22,13 +22,13 @@ jobs:
     - name: build android
       run: |
         msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid
-    # - uses: r0adkll/sign-android-release@v1
-    #   name: Sign app APK
-    #   with:
-    #     releaseDirectory: ${{ env.androidPackages }}
-    #     signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-    #     alias: ${{ secrets.ANDROID_SIGNING_ALIAS }}
-    #     keyStorePassword: ${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}       
+    - uses: r0adkll/sign-android-release@v1
+      name: Sign app APK
+      with:
+        releaseDirectory: ${{ env.androidPackages }}
+        signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+        alias: ${{ secrets.ANDROID_SIGNING_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}       
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
