@@ -7,8 +7,6 @@ env:
   uwpPackages: ${{ github.workspace }}\uwp
   androidPackages: ${{ github.workspace }}\android
   testPackages: ${{ github.workspace }}\test
-  apksignerKeystorePassword: 12341234
-  uwpsignerKeyPassword: 1234
   appcenter-app-slug: daronyondem-MS/xamarin-demo
   appcenter-device-set-slug: daronyondem-MS/test-devices
 jobs:
@@ -22,7 +20,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
     - name: build android
       run: |
-        msbuild **/Xamarin.Demo.App.Android.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }}
+        msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }}
     - uses: r0adkll/sign-android-release@v1
       name: Sign app APK
       with:
@@ -45,7 +43,7 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: build uwp
-      run: msbuild '**/*UWP*.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.signingCert.secureFilePath }}" /p:PackageCertificatePassword="${{ env.uwpsignerKeyPassword }}"
+      run: msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.UWP\Xamarin.Demo.App.UWP.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.signingCert.secureFilePath }}" /p:PackageCertificatePassword="${{ secrets.UWP_SIGNER_KEY_PASSWORD }}"
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
@@ -60,7 +58,7 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: build ui tests
-      run: msbuild '**/*UITest.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:OutputPath="${{ env.testPackages }}"
+      run: msbuild 'src\Xamarin.Demo\Xamarin.Demo.App.UITest\Xamarin.Demo.App.UITest.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:OutputPath="${{ env.testPackages }}"
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
