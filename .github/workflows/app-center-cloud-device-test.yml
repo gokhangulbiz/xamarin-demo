@@ -44,14 +44,6 @@ jobs:
     - run: nuget restore ${{ env.solution }}
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
-      name: Download uwp signing certificate
-      run: |
-        echo "Error: the step 'DownloadSecureFile@1' does not have a conversion path yet"
-        #task: DownloadSecureFile@1
-        #displayName: Download uwp signing certificate
-        #name: signingCert
-        #inputs:
-        #  securefile: Xamarin.Demo.App.UWP_TemporaryKey.pfx
     - name: build uwp
       run: msbuild '**/*UWP*.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.signingCert.secureFilePath }}" /p:PackageCertificatePassword="${{ env.uwpsignerKeyPassword }}"
     - name: publish build outputs
