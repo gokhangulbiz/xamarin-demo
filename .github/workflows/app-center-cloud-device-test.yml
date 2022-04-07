@@ -81,7 +81,7 @@ jobs:
       run: appcenter test run uitest --app '${{ env.appcenter-app-slug }}' --async --devices '${{ env.appcenter-device-set-slug }}' --app-path '${{ env.androidPackages }}\com.companyname.xamarin.demo.app.apk' --build-dir '${{ env.testPackages }}' --uitest-tools-dir '${{ env.testPackages }}' --token '${{ secrets.APP_CENTER_API_TOKEN }}'
       shell: bash
   Distribute_Android_Stage_Distribute_Android_AppCenter:
-    runs-on: windows-2019
+    runs-on: ubuntu-latest
     needs:
     - Test_Stage_Run_Test_On_AppCenter
     if: success()
@@ -97,6 +97,7 @@ jobs:
         notifyTesters: true
         debug: true
   Distribute_UWP_Stage_Distribute_UWP_AppCenter:
+    runs-on: ubuntu-latest
     needs:
     - Test_Stage_Run_Test_On_AppCenter
     if: success()
