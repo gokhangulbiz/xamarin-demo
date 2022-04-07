@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
 env:
-  solution: '**/*.sln'
+  solution: '**\*.sln'
   buildPlatform: x86
   buildConfiguration: Release
   uwpPackages: ${{ github.workspace }}\uwp
