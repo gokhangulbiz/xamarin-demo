@@ -4,13 +4,20 @@ env:
   solution: 'src\Xamarin.Demo\Xamarin.Demo.sln'
   buildPlatform: x86
   buildConfiguration: Release
+  
   uwpPackages: ${{ github.workspace }}\uwp
   androidPackages: ${{ github.workspace }}\android
   testPackages: ${{ github.workspace }}\test
+  
+  uwp_signer_certificate_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
+  uwpSignerKeyPassword: 1234
+  
+  android_keystore_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\android-keytore.keystore
+  androidSigningKeyStorePassword: 12341234
+  androidSigningAlias: 'android-keystore'
+    
   appcenter-android-app-slug: daronyondem-MS/xamarin-demo
   appcenter-android-device-set-slug: daronyondem-MS/test-devices
-  uwp_signer_certificate_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
-  android_keystore_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\android-keytore.keystore
 jobs:
   Build_Stage_Build_Android:
     runs-on: windows-2019
@@ -22,7 +29,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
     - name: build android
       run: |
-        msbuild '${{ github.workspace }}\src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.android_keystore_path }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
+        msbuild '${{ github.workspace }}\src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ env.androidSigningAlias }} /p:AndroidSigningKeyPass=${{ env.androidSigningKeyStorePassword }} /p:AndroidSigningKeyStore=${{ env.android_keystore_path }} /p:AndroidSigningStorePass=${{ env.androidSigningKeyStorePassword }}    
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
@@ -39,7 +46,7 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: build uwp
-      run: msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.UWP\Xamarin.Demo.App.UWP.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.uwp_signer_certificate_path}}" /p:PackageCertificatePassword="${{ secrets.UWP_SIGNER_KEY_PASSWORD }}"
+      run: msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.UWP\Xamarin.Demo.App.UWP.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.uwp_signer_certificate_path}}" /p:PackageCertificatePassword="${{ env.uwpSignerKeyPassword }}"
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
