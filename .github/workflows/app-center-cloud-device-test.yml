@@ -31,8 +31,7 @@ jobs:
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
-        path: ${{ github.workspace }}
-        name: drop
+        path: ${{ env.androidPackages }}
   Build_Stage_Build_UWP:
     runs-on: windows-2019
     steps:
@@ -47,8 +46,7 @@ jobs:
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
-        path: ${{ github.workspace }}
-        name: drop
+        path: ${{ env.uwpPackages }}
   Build_Stage_Build_UI_Test:
     runs-on: windows-2019
     steps:
@@ -62,8 +60,7 @@ jobs:
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
-        path: ${{ github.workspace }}
-        name: drop
+        path: ${{ env.testPackages }}
   Test_Stage_Run_Test_On_AppCenter:
     runs-on: windows-2019
     needs:
@@ -72,18 +69,7 @@ jobs:
     - Build_Stage_Build_UI_Test
     if: success()
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
-      with:
-        repository: none
-    - # "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
-      run: |
-        echo "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
-        #task: DownloadBuildArtifacts@1
-        #inputs:
-        #  buildtype: current
-        #  downloadtype: specific
-        #  downloadpath: ${{ github.workspace }}
+    - uses: actions/download-artifact@v3
     - name: Install npm
       uses: actions/setup-node@v1
       with:
@@ -92,7 +78,7 @@ jobs:
       run: npm install -g appcenter-cli
       shell: bash
     - name: Run tests on appcenter
-      run: appcenter test run uitest --app '${{ env.appcenter-app-slug }}' --async --devices '${{ env.appcenter-device-set-slug }}' --app-path '${{ github.workspace }}\drop\android\com.companyname.xamarin.demo.app.apk' --build-dir '${{ github.workspace }}\drop\test' --uitest-tools-dir '${{ github.workspace }}\drop\test' --token '${{ secrets.APP_CENTER_API_TOKEN }}'
+      run: appcenter test run uitest --app '${{ env.appcenter-app-slug }}' --async --devices '${{ env.appcenter-device-set-slug }}' --app-path '${{ env.androidPackages }}\com.companyname.xamarin.demo.app.apk' --build-dir '${{ env.testPackages }}' --uitest-tools-dir '${{ env.testPackages }}' --token '${{ secrets.APP_CENTER_API_TOKEN }}'
       shell: bash
   Distribute_Android_Stage_Distribute_Android_AppCenter:
     runs-on: windows-2019
@@ -100,45 +86,19 @@ jobs:
     - Test_Stage_Run_Test_On_AppCenter
     if: success()
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v3
+    - name: upload artifact to App Center
+      uses: wzieba/AppCenter-Github-Action@v1
       with:
-        repository: none
-    - # "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
-      run: |
-        echo "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
-        #task: DownloadBuildArtifacts@1
-        #inputs:
-        #  buildtype: current
-        #  downloadtype: specific
-        #  downloadpath: ${{ github.workspace }}
-    - # "Error: the step 'AppCenterDistribute@3' does not have a conversion path yet"
-      run: |
-        echo "Error: the step 'AppCenterDistribute@3' does not have a conversion path yet"
-        #task: AppCenterDistribute@3
-        #inputs:
-        #  serverendpoint: App Center
-        #  appslug: ${{ env.appcenter-app-slug }}
-        #  appfile: ${{ github.workspace }}\drop\android\com.companyname.xamarin.demo.app.apk
-        #  releasenotesoption: input
-        #  releasenotesinput: Initial release note
-        #  destinationtype: groups
+        appName: ${{ env.appcenter-app-slug }}
+        token: ${{secrets.APP_CENTER_API_TOKEN}}
+        group: Testers
+        file: ${{ github.workspace }}\drop\android\com.companyname.xamarin.demo.app.apk
+        notifyTesters: true
+        debug: true
   Distribute_UWP_Stage_Distribute_UWP_AppCenter:
-    runs-on: windows-2019
     needs:
     - Test_Stage_Run_Test_On_AppCenter
     if: success()
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
-      with:
-        repository: none
-    - # "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
-      run: |
-        echo "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
-        #task: DownloadBuildArtifacts@1
-        #inputs:
-        #  buildtype: current
-        #  downloadtype: specific
-        #  downloadpath: ${{ github.workspace }}
-                    
+    - uses: actions/download-artifact@v3
