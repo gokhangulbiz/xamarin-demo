@@ -42,7 +42,6 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.2
     - uses: nuget/setup-nuget@v1
     - run: nuget restore ${{ env.solution }}
-    - # "Error: the step 'DownloadSecureFile@1' does not have a conversion path yet"
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
       name: Download uwp signing certificate
