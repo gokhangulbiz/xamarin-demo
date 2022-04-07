@@ -10,6 +10,7 @@ env:
   appcenter-app-slug: daronyondem-MS/xamarin-demo
   appcenter-device-set-slug: daronyondem-MS/test-devices
   uwp_signer_certificate_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
+  android_keystore_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\android-keystore.keystore
 jobs:
   Build_Stage_Build_Android:
     runs-on: windows-2019
@@ -22,8 +23,10 @@ jobs:
       with:
             vs-version: '[16.0]'
     - name: build android
+      # run: |
+      #   msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.cproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid /p:AndroidUseSharedRuntime=false 
       run: |
-        msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid /p:AndroidUseSharedRuntime=false 
+        msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.cproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.android_keystore_path }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
     - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
       with:
