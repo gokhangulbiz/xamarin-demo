@@ -22,7 +22,7 @@ jobs:
     - name: build android
       run: |
         msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid
-    - uses: r0adkll/sign-android-release@v1
+    - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
       with:
         releaseDirectory: ${{ env.androidPackages }}
