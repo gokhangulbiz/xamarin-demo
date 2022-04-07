@@ -1,0 +1,149 @@
+on:
+  workflow_dispatch:
+env:
+  solution: '**/*.sln'
+  buildPlatform: x86
+  buildConfiguration: Release
+  uwpPackages: ${{ github.workspace }}\uwp
+  androidPackages: ${{ github.workspace }}\android
+  testPackages: ${{ github.workspace }}\test
+  apksignerKeystorePassword: 12341234
+  uwpsignerKeyPassword: 1234
+  appcenter-app-slug: daronyondem-MS/xamarin-demo
+  appcenter-device-set-slug: daronyondem-MS/test-devices
+jobs:
+  Build_Stage_Build_Android:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - uses: nuget/setup-nuget@v1
+    - run: nuget restore ${{ env.solution }}
+    - name: build android
+      run: |
+        msbuild **/Xamarin.Demo.App.Android.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }}
+    - uses: r0adkll/sign-android-release@v1
+      name: Sign app APK
+      with:
+        releaseDirectory: ${{ env.androidPackages }}
+        signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+        alias: ${{ secrets.ANDROID_SIGNING_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}       
+    - name: publish build outputs
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ github.workspace }}
+        name: drop
+  Build_Stage_Build_UWP:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - uses: microsoft/setup-msbuild@v1.0.2
+    - uses: nuget/setup-nuget@v1
+    - run: nuget restore ${{ env.solution }}
+    - # "Error: the step 'DownloadSecureFile@1' does not have a conversion path yet"
+      name: Download uwp signing certificate
+      run: |
+        echo "Error: the step 'DownloadSecureFile@1' does not have a conversion path yet"
+        #task: DownloadSecureFile@1
+        #displayName: Download uwp signing certificate
+        #name: signingCert
+        #inputs:
+        #  securefile: Xamarin.Demo.App.UWP_TemporaryKey.pfx
+    - name: build uwp
+      run: msbuild '**/*UWP*.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.signingCert.secureFilePath }}" /p:PackageCertificatePassword="${{ env.uwpsignerKeyPassword }}"
+    - name: publish build outputs
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ github.workspace }}
+        name: drop
+  Build_Stage_Build_UI_Test:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - uses: nuget/setup-nuget@v1
+    - run: nuget restore ${{ env.solution }}
+    - name: build ui tests
+      run: msbuild '**/*UITest.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:OutputPath="${{ env.testPackages }}"
+    - name: publish build outputs
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ github.workspace }}
+        name: drop
+  Test_Stage_Run_Test_On_AppCenter:
+    runs-on: windows-2019
+    needs:
+    - Build_Stage_Build_Android
+    - Build_Stage_Build_UWP
+    - Build_Stage_Build_UI_Test
+    if: success()
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: none
+    - # "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
+      run: |
+        echo "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
+        #task: DownloadBuildArtifacts@1
+        #inputs:
+        #  buildtype: current
+        #  downloadtype: specific
+        #  downloadpath: ${{ github.workspace }}
+    - name: Install npm
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - name: Install appcenter-cli
+      run: npm install -g appcenter-cli
+      shell: bash
+    - name: Run tests on appcenter
+      run: appcenter test run uitest --app '${{ env.appcenter-app-slug }}' --async --devices '${{ env.appcenter-device-set-slug }}' --app-path '${{ github.workspace }}\drop\android\com.companyname.xamarin.demo.app.apk' --build-dir '${{ github.workspace }}\drop\test' --uitest-tools-dir '${{ github.workspace }}\drop\test' --token '${{ secrets.APP_CENTER_API_TOKEN }}'
+      shell: bash
+  Distribute_Android_Stage_Distribute_Android_AppCenter:
+    runs-on: windows-2019
+    needs:
+    - Test_Stage_Run_Test_On_AppCenter
+    if: success()
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: none
+    - # "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
+      run: |
+        echo "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
+        #task: DownloadBuildArtifacts@1
+        #inputs:
+        #  buildtype: current
+        #  downloadtype: specific
+        #  downloadpath: ${{ github.workspace }}
+    - # "Error: the step 'AppCenterDistribute@3' does not have a conversion path yet"
+      run: |
+        echo "Error: the step 'AppCenterDistribute@3' does not have a conversion path yet"
+        #task: AppCenterDistribute@3
+        #inputs:
+        #  serverendpoint: App Center
+        #  appslug: ${{ env.appcenter-app-slug }}
+        #  appfile: ${{ github.workspace }}\drop\android\com.companyname.xamarin.demo.app.apk
+        #  releasenotesoption: input
+        #  releasenotesinput: Initial release note
+        #  destinationtype: groups
+  Distribute_UWP_Stage_Distribute_UWP_AppCenter:
+    runs-on: windows-2019
+    needs:
+    - Test_Stage_Run_Test_On_AppCenter
+    if: success()
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: none
+    - # "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
+      run: |
+        echo "Error: the step 'DownloadBuildArtifacts@1' does not have a conversion path yet"
+        #task: DownloadBuildArtifacts@1
+        #inputs:
+        #  buildtype: current
+        #  downloadtype: specific
+        #  downloadpath: ${{ github.workspace }}
+                    
