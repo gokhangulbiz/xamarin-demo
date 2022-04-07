@@ -9,7 +9,6 @@ env:
   testPackages: ${{ github.workspace }}\test
   appcenter-android-app-slug: daronyondem-MS/xamarin-demo
   appcenter-android-device-set-slug: daronyondem-MS/test-devices
-  appcenter-uwp-app-slug: daronyondem-MS/xamarin-demo-uwp
   uwp_signer_certificate_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
   android_keystore_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\android-keytore.keystore
 jobs:
