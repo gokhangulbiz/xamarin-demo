@@ -21,7 +21,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
     - name: build android
       run: |
-        msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }}
+        msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:PackageForAndroid
     # - uses: r0adkll/sign-android-release@v1
     #   name: Sign app APK
     #   with:
@@ -33,6 +33,8 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         path: ${{ env.androidPackages }}
+        name: android
+
   Build_Stage_Build_UWP:
     runs-on: windows-2019
     steps:
@@ -43,11 +45,12 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: build uwp
-      run: msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.UWP\Xamarin.Demo.App.UWP.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="{{ env.uwp_signer_certificate_path}}" /p:PackageCertificatePassword="${{ secrets.UWP_SIGNER_KEY_PASSWORD }}"
+      run: msbuild 'src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.UWP\Xamarin.Demo.App.UWP.csproj' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.uwp_signer_certificate_path}}" /p:PackageCertificatePassword="${{ secrets.UWP_SIGNER_KEY_PASSWORD }}"
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
         path: ${{ env.uwpPackages }}
+        name: uwp
   Build_Stage_Build_UI_Test:
     runs-on: windows-2019
     steps:
@@ -62,6 +65,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         path: ${{ env.testPackages }}
+        name: test
   Test_Stage_Run_Test_On_AppCenter:
     runs-on: windows-2019
     needs:
@@ -104,3 +108,4 @@ jobs:
     if: success()
     steps:
     - uses: actions/download-artifact@v3
+      path: ${{ github.workspace }}
