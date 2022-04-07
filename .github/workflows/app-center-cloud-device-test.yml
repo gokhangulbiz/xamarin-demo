@@ -31,14 +31,13 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Save keystore to file system
-      run: |
-        $secretFile = $env:androidKeystorePath; 
-        $encodedBytes = [System.Convert]::FromBase64String($secrets:ANDROID_SIGNING_KEY_BASE64); 
-        Set-Content $secretFile -Value $encodedBytes -AsByteStream;
-      shell: pwsh
+      uses: RollyPeres/base64-to-path@v1
+        with:
+          filePath: ${{ env.androidKeystorePath }} 
+          encodedString: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
     - name: build android
       run: |
-        msbuild '${{ env.androidProjectPath }}' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.androidKeystorePath }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
+        msbuild '${{ env.androidProjectPath }}' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_KEY_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.androidKeystorePath }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
     - name: publish build outputs
       uses: actions/upload-artifact@v2
       with:
@@ -54,12 +53,11 @@ jobs:
     - run: nuget restore ${{ env.solution }}
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
-    - name: Save keystore to file system
-      run: |
-        $secretFile = $env:uwpCertificatePath; 
-        $encodedBytes = [System.Convert]::FromBase64String($secrets:UWP_CERTIFICATE_BASE64); 
-        Set-Content $secretFile -Value $encodedBytes -AsByteStream;
-      shell: pwsh
+    - name: Save certificate to file system
+      uses: RollyPeres/base64-to-path@v1
+        with:
+          filePath: ${{ env.uwpCertificatePath }} 
+          encodedString: ${{ secrets.UWP_CERTIFICATE_BASE64 }}
     - name: build uwp
       run: msbuild '${{ env.uwpProjectPath }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.uwpCertificatePath}}" /p:PackageCertificatePassword="${{ secrets.UWP_CERTIFICATE_PASSWORD }}"
     - name: publish build outputs
