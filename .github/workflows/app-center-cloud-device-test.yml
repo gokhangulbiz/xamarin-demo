@@ -75,6 +75,8 @@ jobs:
     if: success()
     steps:
     - uses: actions/download-artifact@v3
+      with:
+        path: ${{ github.workspace }}
     - name: Install npm
       uses: actions/setup-node@v1
       with:
@@ -92,6 +94,8 @@ jobs:
     if: success()
     steps:
     - uses: actions/download-artifact@v3
+      with:
+        path: ${{ github.workspace }}
     - name: upload artifact to App Center
       uses: wzieba/AppCenter-Github-Action@v1
       with:
@@ -108,4 +112,5 @@ jobs:
     if: success()
     steps:
     - uses: actions/download-artifact@v3
-      path: ${{ github.workspace }}
+      with:
+        path: ${{ github.workspace }}
