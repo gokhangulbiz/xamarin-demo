@@ -12,7 +12,7 @@ env:
   uwp_signer_certificate_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx
   uwpSignerKeyPassword: 1234
   
-  android_keystore_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\android-keytore.keystore
+  android_keystore_path : ${{ github.workspace }}\src\Xamarin.Demo\self-signed-certs\android-keystore.keystore
   androidSigningKeyStorePassword: 12341234
   androidSigningAlias: 'android-keystore'
     
