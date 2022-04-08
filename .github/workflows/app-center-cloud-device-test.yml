@@ -36,8 +36,7 @@ jobs:
       run: echo "$SECRETS_CONTEXT"
       env:
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
-    - name: Get secret from base64
-      shell: bash
+    - name: Get secret from base64     
       env:
         base64Content: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
         apiToken: '${{ secrets.APP_CENTER_API_TOKEN }}'
