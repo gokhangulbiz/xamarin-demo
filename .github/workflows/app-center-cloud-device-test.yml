@@ -39,8 +39,10 @@ jobs:
         $base64Content = $Env:androidKeystorePath
         $filePath = $Secrets.ANDROID_SIGNING_KEY_BASE64
         echo "Base64 content : " $base64Content 
-        echo $filePath
+        echo "------"
+        echo "File Path :" $filePath
         echo $base64Content > data.b64 
+        echo "------"
         cat data.b64
         certutil -decode data.b64 $filePath
         cat $filePath
