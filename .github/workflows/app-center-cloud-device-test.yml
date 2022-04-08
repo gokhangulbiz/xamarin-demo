@@ -20,7 +20,7 @@ env:
     
   appcenterAndroidAppSlug: daronyondem-MS/xamarin-demo
   appcenterAndroidDeviceSetSlug: daronyondem-MS/test-devices
-  appcenterAndroidUwpSlug: daronyondem-MS/uwp-demo/
+  appcenterUwpAppSlug: daronyondem-MS/uwp-demo/
 
 jobs:
   Build_Stage_Build_Android:
@@ -41,7 +41,7 @@ jobs:
       #   base64Content: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
       #   filePath: ${{ env.androidKeystorePath }}
       run: |
-        $base64Content = $Secrets.ANDROID_SIGNING_KEY_BASE64
+        $base64Content = $Secrets:ANDROID_SIGNING_KEY_BASE64
         $filePath = $Env:androidKeystorePath
         echo "------"
         echo "Base64 content : " $base64Content 
@@ -147,7 +147,7 @@ jobs:
     - name: upload artifact to App Center
       uses: wzieba/AppCenter-Github-Action@v1
       with:
-        appName: ${{ env.appcenterAndroidUwpSlug }}
+        appName: ${{ env.appcenterUwpAppSlug }}
         token: ${{secrets.APP_CENTER_API_TOKEN}}
         file: ${{ env.uwpPackages }}\Xamarin.Demo.App.UWP_1.0.0.0_Test\Xamarin.Demo.App.UWP_1.0.0.0_x86.appxbundle
         notifyTesters: true
