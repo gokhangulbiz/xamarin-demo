@@ -36,8 +36,12 @@ jobs:
         base64Content: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
         filePath: ${{ env.androidKeystorePath}}
       run: |
+        echo "Base64 content : " $base64Content 
+        echo $filePath
         echo $base64Content > data.b64 
+        cat data.b64
         certutil -decode data.b64 $filePath
+        cat $filePath
     - name: build android
       run: |
         msbuild '${{ env.androidProjectPath }}' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_KEY_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.androidKeystorePath }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
