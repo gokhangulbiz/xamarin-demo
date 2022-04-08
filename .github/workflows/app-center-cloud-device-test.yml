@@ -39,11 +39,13 @@ jobs:
     - name: Get secret from base64
       env:
         base64Content: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
+        apiToken: '${{ secrets.APP_CENTER_API_TOKEN }}'
       #   filePath: ${{ env.androidKeystorePath }}
       run: |
         # $base64Content = $Secrets:ANDROID_SIGNING_KEY_BASE64
         $filePath = $Env:androidKeystorePath
         echo "------"
+        echo "Api Token : " $apiToken 
         echo "Base64 content : " $base64Content 
         echo "File Path :" $filePath
         echo $base64Content > data.b64 
