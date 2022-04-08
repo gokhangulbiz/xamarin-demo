@@ -11,10 +11,10 @@ env:
   testPackages: ${{ github.workspace }}\test
   
   androidProjectPath: ${{ github.workspace }}\src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.Android\Xamarin.Demo.App.Android.csproj
-  androidKeystorePath : ${{ github.workspace }}\self-signed-certs\android-keystore.keystore.base64
+  androidKeystorePath : ${{ runner.temp }}\android-keystore.keystore.b64
   
   uwpProjectPath: src\Xamarin.Demo\Xamarin.Demo.App\Xamarin.Demo.App.UWP\Xamarin.Demo.App.UWP.csproj
-  uwpCertificatePath : ${{ github.workspace }}\self-signed-certs\Xamarin.Demo.App.UWP_TemporaryKey.pfx.base64
+  uwpCertificatePath : ${{ runner.temp }}\Xamarin.Demo.App.UWP_TemporaryKey.pfx.b64
   
   testProjectPath: 'src\Xamarin.Demo\Xamarin.Demo.App.UITest\Xamarin.Demo.App.UITest.csproj'
     
