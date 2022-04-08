@@ -27,23 +27,17 @@ jobs:
     runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
-    # - uses: nuget/setup-nuget@v1
-    # - run: nuget restore ${{ env.solution }}
-    # - name: Add msbuild to PATH
-    #   uses: microsoft/setup-msbuild@v1.1
+    - uses: nuget/setup-nuget@v1
+    - run: nuget restore ${{ env.solution }}
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
     - name: Get secret from base64     
       env:
         base64Content: ${{ secrets.ANDROID_SIGNING_KEY_BASE64 }}
         filePath: ${{ env.androidKeystorePath }}
       run: |
-        echo "------"
-        echo "Base64 content : " $Env:base64Content 
-        echo "File Path :" $Env:filePath
         echo $Env:base64Content > data.b64 
-        cat data.b64
-        echo "------"
         certutil -decode data.b64 $Env:filePath
-        cat $Env:filePath
     - name: build android
       run: |
         msbuild '${{ env.androidProjectPath }}' /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }} /p:OutputPath=${{ env.androidPackages }} /t:SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=${{ secrets.ANDROID_SIGNING_KEY_ALIAS }} /p:AndroidSigningKeyPass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }} /p:AndroidSigningKeyStore=${{ env.androidKeystorePath }} /p:AndroidSigningStorePass=${{ secrets.ANDROID_SIGNING_KEY_STORE_PASSWORD }}    
@@ -66,8 +60,8 @@ jobs:
         base64Content: ${{ secrets.UWP_CERTIFICATE_BASE64 }}
         filePath: ${{ env.uwpCertificatePath}}
       run: |
-        echo $base64Content > data.b64 
-        certutil -decode data.b64 $filePath
+        echo $Env:base64Content > data.b64 
+        certutil -decode data.b64 $Env:filePath
     - name: build uwp
       run: msbuild '${{ env.uwpProjectPath }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='x86' /p:AppxBundlePlatforms="${{ env.buildPlatform }}" /p:AppxPackageDir="${{ env.uwpPackages }}" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxPackageSigningEnabled=true /p:PackageCertificateThumbprint="4D3D3883BA7C0830B284B51842AFEA6EAF3CF79A" /p:PackageCertificateKeyFile="${{ env.uwpCertificatePath}}" /p:PackageCertificatePassword="${{ secrets.UWP_CERTIFICATE_PASSWORD }}"
     - name: publish build outputs
