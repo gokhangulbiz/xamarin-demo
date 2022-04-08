@@ -39,7 +39,7 @@ jobs:
         echo "------"
         echo "Base64 content : " $Env:base64Content 
         echo "File Path :" $Env:filePath
-        echo $base64Content > data.b64 
+        echo $Env:base64Content > data.b64 
         cat data.b64
         echo "------"
         certutil -decode data.b64 $Env:filePath
